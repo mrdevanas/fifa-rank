@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حساب نقاط تصنيف الفيفا</title>
+    <!-- إضافة Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center">حساب نقاط تصنيف الفيفا</h2>
+        <div class="row">
+            <div class="col-md-6">
+                <label for="pointsWeak" class="form-label">نقاط المنتخب الأضعف</label>
+                <input type="number" id="pointsWeak" class="form-control" placeholder="أدخل نقاط المنتخب الأضعف">
+            </div>
+            <div class="col-md-6">
+                <label for="pointsStrong" class="form-label">نقاط المنتخب الأقوى</label>
+                <input type="number" id="pointsStrong" class="form-control" placeholder="أدخل نقاط المنتخب الأقوى">
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <label for="resultType" class="form-label">نتيجة المباراة</label>
+            <select id="resultType" class="form-select">
+                <option value="win">فوز المنتخب الأقوى</option>
+                <option value="draw">تعادل</option>
+                <option value="lose">خسارة المنتخب الأقوى</option>
+            </select>
+        </div>
+
+        <div class="mt-4 text-center">
+            <button class="btn btn-primary" onclick="calculatePoints()">حساب الفرق بين النقاط</button>
+        </div>
+
+        <div class="mt-4">
+            <p id="result"></p>
+        </div>
+    </div>
+
+    <!-- إضافة Bootstrap و JQuery -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // حساب الفرق بين النقاط
+        function calculatePoints() {
+            const pointsWeak = parseFloat(document.getElementById("pointsWeak").value);
+            const pointsStrong = parseFloat(document.getElementById("pointsStrong").value);
+            const resultType = document.getElementById("resultType").value;
+
+            // التأكد من أن المدخلات صالحة
+            if (isNaN(pointsWeak) || isNaN(pointsStrong)) {
+                document.getElementById("result").innerHTML = "يرجى إدخال نقاط صحيحة لكلا الفريقين";
+                return;
+            }
+
+            // حساب النتيجة المتوقعة (إيلو)
+            const expectedResult = 1 / (1 + Math.pow(10, (pointsWeak - pointsStrong) / 600));
+
+            // تحديد نتيجة المباراة بناءً على الاختيار
+            let actualResult;
+            let resultMessage;
+
+            switch (resultType) {
+                case 'win': // فوز المنتخب الأقوى
+                    actualResult = 1;
+                    resultMessage = "فوز المنتخب الأقوى";
+                    break;
+                case 'draw': // تعادل
+                    actualResult = 0.5;
+                    resultMessage = "تعادل";
+                    break;
+                case 'lose': // خسارة المنتخب الأقوى
+                    actualResult = 0;
+                    resultMessage = "خسارة المنتخب الأقوى";
+                    break;
+                default:
+                    actualResult = 0;
+                    resultMessage = "حالة غير معروفة";
+            }
+
+            // حساب النقاط الجديدة بناءً على النتيجة
+            const K = 10; // عامل أهمية المباراة
+            const pointsStrongAfter = pointsStrong + K * (actualResult - expectedResult);
+            const pointsWeakAfter = pointsWeak + K * ((1 - actualResult) - (1 - expectedResult));
+
+            // عرض النتائج
+            const difference = pointsStrong - pointsWeak;
+            document.getElementById("result").innerHTML = `
+              <center>
+                <h1>النتيجة </h1>
+                <p>  نقاط المنتخب الأقوى بعد المباراة ${pointsStrongAfter.toFixed(2)}</p>
+                <p> نقاط المنتخب الأضعف بعد المباراة  ${pointsWeakAfter.toFixed(2)}</p></center>
+
+            `
+            ;
+        }
+    </script>
+</body>
+</html>
