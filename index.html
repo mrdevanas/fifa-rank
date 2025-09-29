@@ -15,11 +15,6 @@
       border-radius: 20px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.1);
     }
-    .btn-primary {
-      border-radius: 10px;
-      padding: 10px 20px;
-      font-size: 1.1rem;
-    }
     header {
       background: linear-gradient(135deg, #0d6efd, #6610f2);
       color: white;
@@ -27,21 +22,28 @@
       border-radius: 0 0 15px 15px;
       margin-bottom: 30px;
     }
-    header h2 {
-      margin: 0;
+    .dropdown-toggle::after {
+      display: none;
     }
-    .language-switch {
-      position: absolute;
-      top: 15px;
-      right: 20px;
+    .flag-icon {
+      font-size: 1.2rem;
+      margin-right: 5px;
     }
   </style>
 </head>
 <body>
   <header class="text-center position-relative">
-    <h2>FIFA Ranking Points Calculator</h2>
-    <div class="language-switch">
-      <a href="#" class="btn btn-light btn-sm">العربية</a>
+    <h2 id="title">FIFA Ranking Points Calculator</h2>
+
+    <!-- Language Dropdown -->
+    <div class="dropdown position-absolute end-0 top-0 m-3">
+      <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+        🌐 Language
+      </button>
+      <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="#" onclick="setLanguage('en')">🇬🇧 English</a></li>
+        <li><a class="dropdown-item" href="#" onclick="setLanguage('ar')">🇸🇦 العربية</a></li>
+      </ul>
     </div>
   </header>
 
@@ -49,26 +51,26 @@
     <div class="card p-4">
       <div class="row g-3">
         <div class="col-md-6">
-          <label for="pointsWeak" class="form-label">Weaker Team Points</label>
+          <label id="weakLabel" for="pointsWeak" class="form-label">Weaker Team Points</label>
           <input type="number" id="pointsWeak" class="form-control" placeholder="Enter weaker team points">
         </div>
         <div class="col-md-6">
-          <label for="pointsStrong" class="form-label">Stronger Team Points</label>
+          <label id="strongLabel" for="pointsStrong" class="form-label">Stronger Team Points</label>
           <input type="number" id="pointsStrong" class="form-control" placeholder="Enter stronger team points">
         </div>
       </div>
 
       <div class="mt-4">
-        <label for="resultType" class="form-label">Match Result</label>
+        <label id="resultLabel" for="resultType" class="form-label">Match Result</label>
         <select id="resultType" class="form-select">
-          <option value="win">Stronger Team Wins</option>
-          <option value="draw">Draw</option>
-          <option value="lose">Stronger Team Loses</option>
+          <option value="win" id="optWin">Stronger Team Wins</option>
+          <option value="draw" id="optDraw">Draw</option>
+          <option value="lose" id="optLose">Stronger Team Loses</option>
         </select>
       </div>
 
       <div class="mt-4 text-center">
-        <button class="btn btn-primary" onclick="calculatePoints()">Calculate</button>
+        <button id="calcBtn" class="btn btn-primary" onclick="calculatePoints()">Calculate</button>
       </div>
 
       <div class="mt-4 text-center">
@@ -80,13 +82,67 @@
   <!-- Bootstrap Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+    // Translation dictionary
+    const translations = {
+      en: {
+        title: "FIFA Ranking Points Calculator",
+        weakLabel: "Weaker Team Points",
+        strongLabel: "Stronger Team Points",
+        resultLabel: "Match Result",
+        optWin: "Stronger Team Wins",
+        optDraw: "Draw",
+        optLose: "Stronger Team Loses",
+        calcBtn: "Calculate",
+        error: "⚠️ Please enter valid points for both teams.",
+        win: "Stronger team wins.",
+        draw: "It's a draw.",
+        lose: "Stronger team loses.",
+        strongAfter: "Stronger Team New Points",
+        weakAfter: "Weaker Team New Points"
+      },
+      ar: {
+        title: "حاسبة نقاط تصنيف الفيفا",
+        weakLabel: "نقاط المنتخب الأضعف",
+        strongLabel: "نقاط المنتخب الأقوى",
+        resultLabel: "نتيجة المباراة",
+        optWin: "فوز المنتخب الأقوى",
+        optDraw: "تعادل",
+        optLose: "خسارة المنتخب الأقوى",
+        calcBtn: "احسب",
+        error: "⚠️ يرجى إدخال نقاط صحيحة لكلا الفريقين.",
+        win: "فوز المنتخب الأقوى.",
+        draw: "انتهت بالتعادل.",
+        lose: "خسارة المنتخب الأقوى.",
+        strongAfter: "النقاط الجديدة للمنتخب الأقوى",
+        weakAfter: "النقاط الجديدة للمنتخب الأضعف"
+      }
+    };
+
+    let currentLang = "en";
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      document.getElementById("title").innerText = translations[lang].title;
+      document.getElementById("weakLabel").innerText = translations[lang].weakLabel;
+      document.getElementById("strongLabel").innerText = translations[lang].strongLabel;
+      document.getElementById("resultLabel").innerText = translations[lang].resultLabel;
+      document.getElementById("optWin").innerText = translations[lang].optWin;
+      document.getElementById("optDraw").innerText = translations[lang].optDraw;
+      document.getElementById("optLose").innerText = translations[lang].optLose;
+      document.getElementById("calcBtn").innerText = translations[lang].calcBtn;
+
+      // تغيير اتجاه النص إذا عربي
+      document.body.dir = lang === "ar" ? "rtl" : "ltr";
+    }
+
     function calculatePoints() {
       const pointsWeak = parseFloat(document.getElementById("pointsWeak").value);
       const pointsStrong = parseFloat(document.getElementById("pointsStrong").value);
       const resultType = document.getElementById("resultType").value;
+      const t = translations[currentLang];
 
       if (isNaN(pointsWeak) || isNaN(pointsStrong)) {
-        document.getElementById("result").innerHTML = "⚠️ Please enter valid points for both teams.";
+        document.getElementById("result").innerHTML = t.error;
         return;
       }
 
@@ -94,21 +150,10 @@
       let actualResult, resultMessage;
 
       switch (resultType) {
-        case 'win':
-          actualResult = 1;
-          resultMessage = "Stronger team wins.";
-          break;
-        case 'draw':
-          actualResult = 0.5;
-          resultMessage = "It's a draw.";
-          break;
-        case 'lose':
-          actualResult = 0;
-          resultMessage = "Stronger team loses.";
-          break;
-        default:
-          actualResult = 0;
-          resultMessage = "Unknown result.";
+        case 'win': actualResult = 1; resultMessage = t.win; break;
+        case 'draw': actualResult = 0.5; resultMessage = t.draw; break;
+        case 'lose': actualResult = 0; resultMessage = t.lose; break;
+        default: actualResult = 0; resultMessage = "❓";
       }
 
       const K = 10;
@@ -117,8 +162,8 @@
 
       document.getElementById("result").innerHTML = `
         ✅ ${resultMessage}<br>
-        <span class="text-success">Stronger Team New Points: ${pointsStrongAfter.toFixed(2)}</span><br>
-        <span class="text-danger">Weaker Team New Points: ${pointsWeakAfter.toFixed(2)}</span>
+        <span class="text-success">${t.strongAfter}: ${pointsStrongAfter.toFixed(2)}</span><br>
+        <span class="text-danger">${t.weakAfter}: ${pointsWeakAfter.toFixed(2)}</span>
       `;
     }
   </script>
